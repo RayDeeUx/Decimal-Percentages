@@ -181,9 +181,11 @@ class $modify(MyPlayLayer, PlayLayer) {
 		std::smatch match;
 		bool matches = std::regex_match(percentLabelText, match, percentageRegex);
 		if (!matches) return;
-		if (getBool("logging")) log::info("\nmatch[1].str(): {}\nmatch[2].str(): {}", match[1].str(), match[2].str());
-		if (match.empty() || match.size() > 3 || match[1].str().empty() || match[1].str().empty()) return;
-		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", match[1].str(), match[2].str())), fmt::format("{}{}", match[1].str(), decimalPercentAsString(m_level)));
+		std::string newBestSeparator = match[1].str();
+		std::string possiblyNewBest = match[2].str();
+		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty()) return;
+		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}", newBestSeparator, possiblyNewBest);
+		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level)));
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
 };
