@@ -5,7 +5,7 @@
 		"mac": "2.206",
 		"android": "2.206"
 	},
-	"id": "raydeeux_thesillydoggo.decimal_percentages",
+	"id": "raydeeux_thesillydoggo.decimalpercentages",
 	"name": "DecimalPercentages",
 	"version": "v1.0.0",
 	"developers": ["TheSillyDoggo", "RayDeeUx"],
@@ -81,6 +81,11 @@
 	"incompatibilities": [
 		{
 			"id": "thesillydoggo.decimal_percentages",
+			"version": "*",
+			"importance": "superseded"
+		},
+		{
+			"id": "raydeeux_thesillydoggo.decimal_percentages",
 			"version": "*",
 			"importance": "superseded"
 		}
