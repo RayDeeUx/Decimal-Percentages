@@ -185,7 +185,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 				if (!label) continue;
 				if (!std::string(label->getString()).ends_with("%")) continue;
 				const auto dst = Loader::get()->getLoadedMod("raydeeux.deathscreentweaks");
-				if (!dst->getSettingValue<bool>("enabled")) label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
+				if (!dst || !dst->getSettingValue<bool>("enabled")) label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
 				else label->setString(formatCurrentPercentInPlayLayer().c_str());
 			}
 		});
