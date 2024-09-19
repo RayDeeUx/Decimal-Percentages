@@ -50,7 +50,7 @@ std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true
 	std::smatch match;
 	bool matches = std::regex_match(roundedPercent, match, trailingZeroesRegex);
 	if (!matches) return roundedPercent;
-	if (match.empty() || match.size() > 3 || match[1].str().empty || match[2].str().empty) return roundedPercent;
+	if (match.empty() || match.size() > 3 || match[1].str().empty() || match[2].str().empty()) return roundedPercent;
 	roundedPercent = match[1].str();
 	if (roundedPercent.ends_with('.')) roundedPercent.pop_back(); // if, after removing trailing zeroes, string ends with decimal point separtor, remove decimal point separator
 	return roundedPercent;
