@@ -46,13 +46,13 @@ std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true
 	if (percentage >= 100.f && getBool("ignoreHundredPercent")) return "100";
 	auto roundedPercent = numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
 	if (!getBool("noTrailingZeros")) return roundedPercent;
-	if (roundedPercent.find('.') == std::string::npos) return roundedPercent;
+	if (roundedPercent.find('.') == std::string::npos) return roundedPercent; // if percentage (after accuracy is applied) does not have a decimal point, abort!
 	std::smatch match;
 	bool matches = std::regex_match(roundedPercent, match, trailingZeroesRegex);
 	if (!matches) return roundedPercent;
 	if (match.empty() || match.size() > 3 || match[1].str().empty || match[2].str().empty) return roundedPercent;
 	roundedPercent = match[1].str();
-	if (roundedPercent.ends_with('.')) roundedPercent.pop_back();
+	if (roundedPercent.ends_with('.')) roundedPercent.pop_back(); // if, after removing trailing zeroes, string ends with decimal point separtor, remove decimal point separator
 	return roundedPercent;
 }
 
