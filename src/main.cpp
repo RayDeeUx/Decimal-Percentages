@@ -11,6 +11,8 @@
 
 static const std::regex percentageRegex(R"(^(?:\d+(?:\.\d+)?%)([^\n\d]*)(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context.
+static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
+// see https://regex101.com/r/j5IVLk/1 for context.
 
 using namespace geode::prelude;
 
@@ -42,7 +44,15 @@ float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 
 std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true) {
 	if (percentage >= 100.f && getBool("ignoreHundredPercent")) return "100";
-	return numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
+	auto roundedPercent = numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
+	if (!getBool("noTrailingZeros")) return roundedPercent;
+	std::smatch match;
+	bool matches = std::regex_match(roundedPercent, match, trailingZeroesRegex);
+	if (!matches) return roundedPercent;
+	if (match.empty() || match.size() > 3 || match[1].str().empty || match[2].str().empty) return roundedPercent;
+	roundedPercent = match[1].str();
+	if (roundedPercent.ends_with('.')) roundedPercent.pop_back();
+	return roundedPercent;
 }
 
 std::string decimalPercentAsString(GJGameLevel *level, bool practice = false, bool qualifiedForInsaneMode = true) {

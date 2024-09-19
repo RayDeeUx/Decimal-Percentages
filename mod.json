@@ -35,6 +35,12 @@
 				"slider-step": 1
 			}
 		},
+		"noTrailingZeros": {
+			"name": "Disable Trailing Zeroes",
+			"description": "<cl>Suggested by levigaming1248.</c>\n\nRemoves repeated trailing zeroes (0) from percentages.\nUseful for levels with less than 100% before (re)installing this mod.\n\n<cy>This will apply to all percentages regardless of your preferences below this setting.</c>",
+			"type": "bool",
+			"default": true
+		},
 		"ignoreHundredPercent": {
 			"name": "Ignore 100%",
 			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to levels you have completed.",
@@ -86,6 +92,11 @@
 		},
 		{
 			"id": "raydeeux_thesillydoggo.decimal_percentages",
+			"version": "*",
+			"importance": "superseded"
+		},
+		{
+			"id": "ata.percentages",
 			"version": "*",
 			"importance": "superseded"
 		}
