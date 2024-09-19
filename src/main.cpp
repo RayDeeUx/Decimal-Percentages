@@ -7,7 +7,7 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
 #include <regex>
 
-#define PREFERRED_HOOK_PRIO -2123456789 // because for some genius reason QOLMod changes a level's levelType value and now this hook prio's here to stop that
+#define PREFERRED_HOOK_PRIO -2123456789 // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
 
 static const std::regex percentageRegex(R"(^(?:\d+(?:\.\d+)?%)([^\n\d]*)(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context.
@@ -183,8 +183,13 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (!matches) return;
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
-		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty()) return;
+		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
 		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}", newBestSeparator, possiblyNewBest);
+		std::string newBestWithoutPercent = possiblyNewBest;
+		newBestWithoutPercent.pop_back();
+		auto numFromString = utils::numFromString<int64_t>(newBestWithoutPercent);
+		if (numFromString.isErr()) return;
+		if (numFromString.unwrap() != m_level->m_normalPercent) return;
 		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level)));
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
