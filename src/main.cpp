@@ -46,6 +46,7 @@ std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true
 	if (percentage >= 100.f && getBool("ignoreHundredPercent")) return "100";
 	auto roundedPercent = numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
 	if (!getBool("noTrailingZeros")) return roundedPercent;
+	if (roundedPercent.find('.') == std::string::npos) return roundedPercent;
 	std::smatch match;
 	bool matches = std::regex_match(roundedPercent, match, trailingZeroesRegex);
 	if (!matches) return roundedPercent;
