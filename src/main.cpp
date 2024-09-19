@@ -41,6 +41,7 @@ float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 }
 
 std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true) {
+	if (percentage >= 100.f && getBool("ignoreHundredPercent")) return "100";
 	return numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
 }
 
@@ -71,7 +72,7 @@ class $modify(GJGameLevel) {
 	}
 	void savePercentage(int percent, bool isPracticeMode, int clicks, int attempts, bool isChkValid) {
 		GJGameLevel::savePercentage(percent, isPracticeMode, clicks, attempts, isChkValid);
-		if (!getBool("enabled") || this->isPlatformer()) return;
+		if (this->isPlatformer()) return;
 		auto pl = PlayLayer::get();
 		if (!pl) {
 			savePercent(this, percent, isPracticeMode);
@@ -108,9 +109,11 @@ class $modify(MyPauseLayer, PauseLayer) {
 		auto level = PlayLayer::get()->m_level;
 		if (!level || level->isPlatformer()) return;
 		if (auto normal = getLabelByID(this, "normal-progress-label")) {
+			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			normal->setString(decimalPercentAsString(level, false, true).c_str());
 		}
 		if (auto practice = getLabelByID(this, "practice-progress-label")) {
+			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			practice->setString(decimalPercentAsString(level, true, true).c_str());
 		}
 	}
@@ -122,7 +125,7 @@ class $modify(MyLevelCell, LevelCell) {
 	}
 	void loadFromLevel(GJGameLevel* level) {
 		LevelCell::loadFromLevel(level);
-		if (!getBool("enabled")) return;
+		if (!getBool("enabled") || getBool("ignoreLevelCell")) return;
 		if (!level || level->isPlatformer()) return;
 		if (auto percent = getLabelByID(this, "percentage-label")) {
 			percent->setString(decimalPercentAsString(level, false, false).c_str());
@@ -139,9 +142,11 @@ class $modify(MyLevelPage, LevelPage) {
 		if (!getBool("enabled")) return;
 		if (!level || level->isPlatformer()) return;
 		if (auto normal = getLabelByID(this, "normal-progress-label")) {
+			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			normal->setString(decimalPercentAsString(level, false, true).c_str());
 		}
 		if (auto practice = getLabelByID(this, "practice-progress-label")) {
+			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			practice->setString(decimalPercentAsString(level, true, true).c_str());
 		}
 	}
@@ -176,7 +181,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 	}
 	void updateProgressbar() {
 		PlayLayer::updateProgressbar();
-		if (!getBool("enabled") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
+		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
 		std::string percentLabelText = m_percentageLabel->getString();
 		std::smatch match;
 		bool matches = std::regex_match(percentLabelText, match, percentageRegex);

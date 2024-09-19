@@ -5,7 +5,7 @@ Adds decimal points to percentages everywhere you can think of (Hopefully.):
 - Level lists and level browsing menus
 - Pause menu (including Editor levels)
 - "New Best" screens
-- Best scores shown in % progress text <cy>(Note: requires a mod menu with a "Best in Percentage" feature)</c>
+- Best scores shown in percentage (%) label <cy>(Note: requires a mod menu with a "Best in Percentage" feature)</c>
 
 <cy>_***Note:***_</c> *<cy>For those who have</c> <cl>DeathScreenTweaks</c><cy>, you are welcome to leave the</c> <cl>"Accurate Percentages"</c> <cy>toggle setting to whatever you like; DecimalPercentages will try its best to be compatible in any case.</c>*
 

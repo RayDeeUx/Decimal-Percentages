@@ -35,6 +35,24 @@
 				"slider-step": 1
 			}
 		},
+		"ignoreHundredPercent": {
+			"name": "Ignore 100%",
+			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to levels you have completed.",
+			"type": "bool",
+			"default": false
+		},
+		"ignoreLevelCell": {
+			"name": "Ignore Level Cells",
+			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to level cells (when browsing online levels).",
+			"type": "bool",
+			"default": false
+		},
+		"ignorePercentageLabel": {
+			"name": "Ignore \"New Best\" in Percentage Label",
+			"description": "Won't apply decimal points to the \"highest percentage\" section of the percentage label <cy>(if the percentage label includes your highest percentage of a level.)</c>",
+			"type": "bool",
+			"default": false
+		},
 		"insaneMode": {
 			"name": "Insane Mode",
 			"description": "For the person who wants to display more than three decimal points outside of the level progress bar.",
