@@ -11,6 +11,8 @@ Adds decimal points to percentages everywhere you can think of (Hopefully.):
 
 <cy>_***Note:***_</c> *<cy>For those who have</c> <cl>DeathScreenTweaks</c><cy>, you are welcome to leave the</c> <cl>"Accurate Percentages"</c> <cy>toggle setting to whatever you like; DecimalPercentages will try its best to be compatible in any case.</c>*
 
+_***Note:***_ *By default, this mod allows (at most) three decimal points when viewing online levels, saved online levels, and levels in level lists. Enable <cl>"Insane Mode"</c> in the mod settings to disable this limit.*
+
 Most of this mod's code, including how this mod stores level percentages, was written by TheSillyDoggo. Then life happened, as well as a few bug reports.
 
 Mod idea by [levigaming1248](https://discord.com/users/1054183308042440706). A salute to [at4pm](https://github.com/at4pm) for attempting this mod. <cl>o7</c>

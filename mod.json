@@ -41,15 +41,21 @@
 			"type": "bool",
 			"default": true
 		},
+		"insaneMode": {
+			"name": "Insane Mode",
+			"description": "For the person who wants to display more than three decimal points outside of the level progress bar.",
+			"type": "bool",
+			"default": false
+		},
 		"ignoreHundredPercent": {
 			"name": "Ignore 100%",
-			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to levels you have completed.",
+			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to levels you have completed. Applies everywhere.",
 			"type": "bool",
 			"default": false
 		},
 		"ignoreLevelCell": {
 			"name": "Ignore Level Cells",
-			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to level cells (when browsing online levels).",
+			"description": "<cl>Suggested by levigaming1248.</c>\n\nWon't apply decimal points to level cells (when browsing online levels, saved online levels, and levels in level lists).\n\n<cy>For obvious reasons, this setting overrides</c> <cy>\"Insane Mode\"</c><cy>.</c>",
 			"type": "bool",
 			"default": false
 		},
@@ -59,15 +65,9 @@
 			"type": "bool",
 			"default": false
 		},
-		"insaneMode": {
-			"name": "Insane Mode",
-			"description": "For the person who wants to display more than three decimal points outside of the level progress bar.",
-			"type": "bool",
-			"default": false
-		},
 		"logging": {
 			"name": "Logging",
-			"description": "Toggles logging.",
+			"description": "Toggles logging the percentage text, in case a new mod menu decides to be disruptive.\n\n<cr>Only enable this if you know what you're doing, or if you are told to do so.</c>",
 			"type": "bool",
 			"default": false
 		}
