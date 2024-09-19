@@ -67,7 +67,7 @@
 		},
 		"logging": {
 			"name": "Logging",
-			"description": "Toggles logging the percentage text, in case a new mod menu decides to be disruptive.\n\n<cr>Only enable this if you know what you're doing, or if you are told to do so.</c>",
+			"description": "Toggles logging the percentage text, in case another mod decides to be disruptive.\n\n<cr>Only enable this if you know what you're doing, or if you are told to do so.</c>",
 			"type": "bool",
 			"default": false
 		}

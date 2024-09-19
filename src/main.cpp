@@ -8,6 +8,7 @@
 #include <regex>
 
 #define PREFERRED_HOOK_PRIO -2123456789 // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
+#define DEATHSCREENTWEAKS "raydeeux.deathscreentweaks"
 
 static const std::regex percentageRegex(R"(^(?:\d+(?:\.\d+)?%)([^\n\d]*)(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context.
@@ -175,18 +176,22 @@ class $modify(MyPlayLayer, PlayLayer) {
 		PlayLayer::showNewBest(p0, p1, p2, p3, p4, p5);
 		if (!getBool("enabled") || !m_level || m_level->isPlatformer()) return;
 		const auto loader = Loader::get();
-		if (const auto dst = loader->getLoadedMod("raydeeux.deathscreentweaks")) {
+		if (Loader::get()->isModLoaded(DEATHSCREENTWEAKS)) {
+			const auto dst = loader->getLoadedMod(DEATHSCREENTWEAKS);
 			if (dst->getSettingValue<bool>("enabled") && dst->getSettingValue<bool>("accuratePercent")) return;
 		}
 		loader->queueInMainThread([this]{
 			for (auto child : CCArrayExt<CCNode*>(this->getChildren())) {
 				if (child->getZOrder() != 100) continue;
-				const auto label = getChildOfType<CCLabelBMFont>(child, -1);
-				if (!label) continue;
-				if (!std::string(label->getString()).ends_with("%")) continue;
-				const auto dst = Loader::get()->getLoadedMod("raydeeux.deathscreentweaks");
-				if (!dst || !dst->getSettingValue<bool>("enabled")) label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
-				else label->setString(formatCurrentPercentInPlayLayer().c_str());
+				for (auto grandchild : CCArrayExt<CCNode*>(child->getChildren())) {
+					auto label = typeinfo_cast<CCLabelBMFont*>(grandchild);
+					if (!label) continue;
+					if (!std::string(label->getString()).ends_with('%')) continue;
+					if (getBool("logging")) log::info("\nLoader::get()->isModLoaded(DEATHSCREENTWEAKS): {}\nlabel->getString(): {}\nlabel->getString().ends_with('%'): {}", Loader::get()->isModLoaded(DEATHSCREENTWEAKS), label->getString(), std::string(label->getString()).ends_with('%'));
+					if (!Loader::get()->isModLoaded(DEATHSCREENTWEAKS)) return label->setString(formatCurrentPercentInPlayLayer().c_str());
+					if (!Loader::get()->getLoadedMod(DEATHSCREENTWEAKS)->getSettingValue<bool>("enabled")) return label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
+					return label->setString(formatCurrentPercentInPlayLayer().c_str());
+				}
 			}
 		});
 	}
