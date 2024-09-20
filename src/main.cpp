@@ -85,11 +85,12 @@ class $modify(GJGameLevel) {
 	void savePercentage(int percent, bool isPracticeMode, int clicks, int attempts, bool isChkValid) {
 		GJGameLevel::savePercentage(percent, isPracticeMode, clicks, attempts, isChkValid);
 		if (this->isPlatformer()) return;
-		auto pl = PlayLayer::get();
+		const auto pl = PlayLayer::get();
 		if (!pl) {
-			savePercent(this, percent, isPracticeMode);
-		} else if (pl->getCurrentPercent() > getPercentageForLevel(this, isPracticeMode)) {
-			savePercent(this, PlayLayer::get()->getCurrentPercent(), isPracticeMode);
+			return savePercent(this, percent, isPracticeMode);
+		}
+		if (pl->getCurrentPercent() > getPercentageForLevel(this, isPracticeMode)) {
+			return savePercent(this, PlayLayer::get()->getCurrentPercent(), isPracticeMode);
 		}
 	}
 };
@@ -102,10 +103,22 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 		if (!LevelInfoLayer::init(level, challenge)) return false;
 		if (!getBool("enabled") || level->isPlatformer()) return true;
 		if (auto normal = getLabelByID(this, "normal-mode-percentage")) {
-			normal->setString(decimalPercentAsString(level, false, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, false, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return true;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return true;
+			normal->setString(dpAsString.c_str());
 		}
 		if (auto practice = getLabelByID(this, "practice-mode-percentage")) {
-			practice->setString(decimalPercentAsString(level, true, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, true, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return true;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_practicePercent) return true;
+			practice->setString(dpAsString.c_str());
 		}
 		return true;
 	}
@@ -122,11 +135,23 @@ class $modify(MyPauseLayer, PauseLayer) {
 		if (!level || level->isPlatformer()) return;
 		if (auto normal = getLabelByID(this, "normal-progress-label")) {
 			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			normal->setString(decimalPercentAsString(level, false, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, false, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+			normal->setString(dpAsString.c_str());
 		}
 		if (auto practice = getLabelByID(this, "practice-progress-label")) {
 			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			practice->setString(decimalPercentAsString(level, true, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, true, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_practicePercent) return;
+			practice->setString(dpAsString.c_str());
 		}
 	}
 };
@@ -140,7 +165,13 @@ class $modify(MyLevelCell, LevelCell) {
 		if (!getBool("enabled") || getBool("ignoreLevelCell")) return;
 		if (!level || level->isPlatformer()) return;
 		if (auto percent = getLabelByID(this, "percentage-label")) {
-			percent->setString(decimalPercentAsString(level, false, false).c_str());
+			std::string dpAsString = decimalPercentAsString(level, false, false);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+			percent->setString(dpAsString.c_str());
 		}
 	}
 };
@@ -155,11 +186,23 @@ class $modify(MyLevelPage, LevelPage) {
 		if (!level || level->isPlatformer()) return;
 		if (auto normal = getLabelByID(this, "normal-progress-label")) {
 			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			normal->setString(decimalPercentAsString(level, false, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, false, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+			normal->setString(dpAsString.c_str());
 		}
 		if (auto practice = getLabelByID(this, "practice-progress-label")) {
 			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			practice->setString(decimalPercentAsString(level, true, true).c_str());
+			std::string dpAsString = decimalPercentAsString(level, true, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_practicePercent) return;
+			practice->setString(dpAsString.c_str());
 		}
 	}
 };
