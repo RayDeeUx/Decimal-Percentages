@@ -1,6 +1,6 @@
 # DecimalPercentages Changelog
 ## 1.1.0
-- Refactor how perentages are saved.
+- Refactor how percentages are saved.
 - Fix decimal points not being applied to best % scores from practice mode in the % progress bar label.
 - Fix one last odd edge case where percentages displayed in the progress bar weren't equal to what was recorded by the mod.
 - Fix a bug where percentages saved from Daily/Weekly/Event variants of a level ID were applied to regular variants of the same level ID, despite different amounts of progress.
