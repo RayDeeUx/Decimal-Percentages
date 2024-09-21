@@ -32,6 +32,8 @@ float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
+	} else if (level->m_gauntletLevel || level->m_gauntletLevel2) {
+		str = fmt::format("percentage_{}_gauntlet_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else if (level->m_dailyID.value() == 0) {
 		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else {
@@ -72,6 +74,8 @@ void savePercent(GJGameLevel* level, float percent, bool practice) {
 	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
+	} else if (level->m_gauntletLevel || level->m_gauntletLevel2) {
+		str = fmt::format("percentage_{}_gauntlet_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else if (level->m_dailyID.value() == 0) {
 		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else {
