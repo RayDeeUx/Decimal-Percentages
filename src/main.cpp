@@ -29,14 +29,14 @@ int64_t getDecimalPlaces(bool qualifiedForInsaneMode = true) {
 
 float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 	if (level->m_normalPercent > 99 && !practice || level->m_practicePercent > 99 && practice) return 100.f;
+	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
-		auto str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
-		if (!Mod::get()->hasSavedValue(str)) {
-			Mod::get()->setSavedValue<float>(str, practice ? level->m_practicePercent : level->m_normalPercent.value());
-		}
-		return Mod::get()->getSavedValue<float>(str, practice ? level->m_practicePercent : level->m_normalPercent.value());
+		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
+	} else if (level->m_dailyID.value() == 0) {
+		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
+	} else {
+		str = fmt::format("percentage_{}_{}_periodic_{}", practice ? "practice" : "normal", level->m_levelID.value(), level->m_dailyID.value());
 	}
-	auto str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	if (!Mod::get()->hasSavedValue(str)) {
 		Mod::get()->setSavedValue<float>(str, practice ? level->m_practicePercent : level->m_normalPercent.value());
 	}
@@ -69,13 +69,15 @@ CCLabelBMFont* getLabelByID(CCNode* parent, const std::string& nodeID) {
 
 void savePercent(GJGameLevel* level, float percent, bool practice) {
 	if (level->isPlatformer()) return;
+	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
-		auto str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
-		Mod::get()->setSavedValue<float>(str, percent);
+		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
+	} else if (level->m_dailyID.value() == 0) {
+		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else {
-		auto str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
-		Mod::get()->setSavedValue<float>(str, percent);
+		str = fmt::format("percentage_{}_{}_periodic_{}", practice ? "practice" : "normal", level->m_levelID.value(), level->m_dailyID.value());
 	}
+	Mod::get()->setSavedValue<float>(str, percent);
 }
 
 class $modify(GJGameLevel) {
@@ -86,6 +88,7 @@ class $modify(GJGameLevel) {
 		GJGameLevel::savePercentage(percent, isPracticeMode, clicks, attempts, isChkValid);
 		if (this->isPlatformer()) return;
 		const auto pl = PlayLayer::get();
+		if (getBool("logging")) log::info("=== level ID vs daily/weekly/event ID debug info ===\ndaily/weekly ID: {}\nlevel ID: {}", m_dailyID.value(), m_levelID.value());
 		if (!pl) {
 			return savePercent(this, percent, isPracticeMode);
 		}
@@ -253,8 +256,9 @@ class $modify(MyPlayLayer, PlayLayer) {
 		newBestWithoutPercent.pop_back();
 		auto numFromString = utils::numFromString<int64_t>(newBestWithoutPercent);
 		if (numFromString.isErr()) return;
-		if (numFromString.unwrap() != m_level->m_normalPercent) return;
-		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level)));
+		if (numFromString.unwrap() != m_level->m_normalPercent && !m_isPracticeMode) return;
+		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
+		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode)));
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
 };
