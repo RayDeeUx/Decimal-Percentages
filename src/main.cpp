@@ -32,7 +32,7 @@ float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
-	} else if (level->m_gauntletLevel || level->m_gauntletLevel2) {
+	} else if (level->m_gauntletLevel) {
 		str = fmt::format("percentage_{}_gauntlet_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else if (level->m_dailyID.value() == 0) {
 		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
@@ -74,7 +74,7 @@ void savePercent(GJGameLevel* level, float percent, bool practice) {
 	std::string str = "";
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
-	} else if (level->m_gauntletLevel || level->m_gauntletLevel2) {
+	} else if (level->m_gauntletLevel) {
 		str = fmt::format("percentage_{}_gauntlet_{}", practice ? "practice" : "normal", level->m_levelID.value());
 	} else if (level->m_dailyID.value() == 0) {
 		str = fmt::format("percentage_{}_{}", practice ? "practice" : "normal", level->m_levelID.value());
@@ -92,7 +92,7 @@ class $modify(GJGameLevel) {
 		GJGameLevel::savePercentage(percent, isPracticeMode, clicks, attempts, isChkValid);
 		if (this->isPlatformer()) return;
 		const auto pl = PlayLayer::get();
-		if (getBool("logging")) log::info("=== level ID vs daily/weekly/event ID debug info ===\ndaily/weekly ID: {}\nlevel ID: {}", m_dailyID.value(), m_levelID.value());
+		if (getBool("logging")) log::info("=== level ID vs daily/weekly/event ID debug info ===\ndaily/weekly ID: {}\nlevel ID: {}\nis gauntlet:", m_dailyID.value(), m_levelID.value(), m_gauntletLevel);
 		if (!pl) {
 			return savePercent(this, percent, isPracticeMode);
 		}
@@ -178,6 +178,7 @@ class $modify(MyLevelCell, LevelCell) {
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
 			if (dpAsFloat.isErr()) return;
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+			if (dpAsString == "0%") return;
 			percent->setString(dpAsString.c_str());
 		}
 	}
