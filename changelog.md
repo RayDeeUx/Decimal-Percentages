@@ -1,4 +1,6 @@
 # DecimalPercentages Changelog
+## 1.1.2
+- Port to 2.2074.
 ## 1.1.1
 - Added support for saving percentages for gauntlet variants of a level ID.
 ## 1.1.0

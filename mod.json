@@ -1,13 +1,13 @@
 {
-	"geode": "3.4.0",
+	"geode": "4.0.0-alpha.1",
 	"gd": {
-		"win": "2.206",
-		"mac": "2.206",
-		"android": "2.206"
+		"win": "2.2074",
+		"mac": "2.2074",
+		"android": "2.2074"
 	},
 	"id": "raydeeux_thesillydoggo.decimalpercentages",
 	"name": "DecimalPercentages",
-	"version": "v1.1.1",
+	"version": "v1.1.2",
 	"developers": ["TheSillyDoggo", "RayDeeUx"],
 	"description": "Shows decimals in your percentages everywhere.",
 	"repository": "https://github.com/RayDeeUx/Decimal-Percentages",
@@ -80,7 +80,7 @@
 		},
 		{
 			"id": "geode.node-ids",
-			"version": ">=v1.14.0",
+			"version": ">=v1.16.0",
 			"importance": "required"
 		}
 	],
