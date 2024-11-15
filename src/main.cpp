@@ -173,12 +173,12 @@ class $modify(MyLevelCell, LevelCell) {
 		if (!level || level->isPlatformer()) return;
 		if (auto percent = getLabelByID(this, "percentage-label")) {
 			std::string dpAsString = decimalPercentAsString(level, false, false);
+			if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && utils::string::contains(dpAsString, "000%") && getBool("noTrailingZeros"))) return;
 			std::string dpNoPercent = dpAsString;
 			dpNoPercent.pop_back();
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
 			if (dpAsFloat.isErr()) return;
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
-			if (dpAsString == "0%") return;
 			percent->setString(dpAsString.c_str());
 		}
 	}
