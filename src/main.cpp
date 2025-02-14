@@ -14,7 +14,7 @@
 static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
-// see https://regex101.com/r/j5IVLk/1 for context.
+// see https://regex101.com/r/j5IVLk/2 for context.
 
 using namespace geode::prelude;
 
@@ -173,20 +173,35 @@ class $modify(MyLevelCell, LevelCell) {
 	static void onModify(auto& self) {
 		(void) self.setHookPriority("LevelCell::loadFromLevel", PREFERRED_HOOK_PRIO);
 	}
-	void loadFromLevel(GJGameLevel* level) {
-		LevelCell::loadFromLevel(level);
-		if (!getBool("enabled") || getBool("ignoreLevelCell")) return;
+	void applyDecimalPercentage(GJGameLevel *level) {
 		if (!level || level->isPlatformer()) return;
 		CCLabelBMFont* percent = getLabelByID(this, "percentage-label");
 		if (!percent) return;
 		const std::string& dpAsString = decimalPercentAsString(level, false, false);
-		if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && utils::string::contains(dpAsString, "000%") && getBool("noTrailingZeros"))) return;
+		std::smatch match;
+		if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && std::regex_match(dpAsString, match, trailingZeroesRegex) && getBool("noTrailingZeros"))) return;
 		std::string dpNoPercent = dpAsString;
 		dpNoPercent.pop_back();
 		const auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
 		if (dpAsFloat.isErr()) return;
-		if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+		if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) {
+			auto percentString = static_cast<std::string>(percent->getString());
+			bool areEqual = false;
+			if (percentString.ends_with('%') && percentString.length() > 1) {
+				percentString.pop_back();
+				if (percentString.empty()) return;
+				const std::vector<std::string> splitVector = utils::string::split(dpAsString, ".");
+				if (splitVector.empty()) return;
+				areEqual = splitVector.at(0) == percentString;
+			}
+			if (!areEqual) return;
+		}
 		percent->setString(dpAsString.c_str());
+	}
+	void loadFromLevel(GJGameLevel* level) {
+		LevelCell::loadFromLevel(level);
+		if (!getBool("enabled") || getBool("ignoreLevelCell")) return;
+		MyLevelCell::applyDecimalPercentage(level);
 	}
 };
 
@@ -256,8 +271,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
 		const std::string& percentLabelText = m_percentageLabel->getString();
 		std::smatch match;
-		bool matches = std::regex_match(percentLabelText, match, percentageRegex);
-		if (!matches) return;
+		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
