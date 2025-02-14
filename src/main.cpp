@@ -186,15 +186,12 @@ class $modify(MyLevelCell, LevelCell) {
 		if (dpAsFloat.isErr()) return;
 		if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) {
 			auto percentString = static_cast<std::string>(percent->getString());
-			bool areEqual = false;
-			if (percentString.ends_with('%') && percentString.length() > 1) {
-				percentString.pop_back();
-				if (percentString.empty()) return;
-				const std::vector<std::string> splitVector = utils::string::split(dpAsString, ".");
-				if (splitVector.empty()) return;
-				areEqual = splitVector.at(0) == percentString;
-			}
-			if (!areEqual) return;
+			if (!percentString.ends_with('%') && percentString.length() < 2) return;
+			percentString.pop_back();
+			if (percentString.empty()) return;
+			const std::vector<std::string> splitVector = utils::string::split(dpAsString, ".");
+			if (splitVector.empty()) return;
+			if (splitVector.at(0) != percentString) return;
 		}
 		percent->setString(dpAsString.c_str());
 	}
