@@ -1,4 +1,7 @@
 # DecimalPercentages Changelog
+## 1.1.3
+- *Hopefully* fix a bug where the decimal percentages for some level cells displayed some variation of `0.000%`.
+- Refactor a few things here and there.
 ## 1.1.2
 - Port to 2.2074.
 ## 1.1.1
