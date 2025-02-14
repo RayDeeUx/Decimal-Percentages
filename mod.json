@@ -1,5 +1,5 @@
 {
-	"geode": "4.0.0-beta.1",
+	"geode": "4.0.1",
 	"gd": {
 		"win": "2.2074",
 		"mac": "2.2074",
@@ -7,7 +7,7 @@
 	},
 	"id": "raydeeux_thesillydoggo.decimalpercentages",
 	"name": "DecimalPercentages",
-	"version": "v1.1.2",
+	"version": "v1.1.3",
 	"developers": ["TheSillyDoggo", "RayDeeUx"],
 	"description": "Shows decimals in your percentages everywhere.",
 	"repository": "https://github.com/RayDeeUx/Decimal-Percentages",

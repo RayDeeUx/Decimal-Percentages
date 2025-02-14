@@ -1,21 +1,24 @@
-#include <Geode/modify/GJGameLevel.hpp>
-#include <Geode/modify/PlayLayer.hpp>
-#include <Geode/modify/LevelInfoLayer.hpp>
-#include <Geode/modify/LevelCell.hpp>
-#include <Geode/modify/PauseLayer.hpp>
-#include <Geode/modify/LevelPage.hpp>
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <Geode/modify/LevelInfoLayer.hpp>
+#include <Geode/modify/GJGameLevel.hpp>
+#include <Geode/modify/PauseLayer.hpp>
+#include <Geode/modify/MenuLayer.hpp>
+#include <Geode/modify/PlayLayer.hpp>
+#include <Geode/modify/LevelCell.hpp>
+#include <Geode/modify/LevelPage.hpp>
 #include <regex>
 
-#define PREFERRED_HOOK_PRIO -2123456789 // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
+#define PREFERRED_HOOK_PRIO (-3999) // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
 #define DEATHSCREENTWEAKS "raydeeux.deathscreentweaks"
 
-static const std::regex percentageRegex(R"(^(?:\d+(?:\.\d+)?%)([^\n\d]*)(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
-// see https://regex101.com/r/jlTQrI/2 for context.
+static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
+// see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/j5IVLk/1 for context.
 
 using namespace geode::prelude;
+
+geode::Mod* dst = nullptr; // deathscreentweaks
 
 bool getBool(const std::string_view& key) {
 	return Mod::get()->getSettingValue<bool>(key);
@@ -51,8 +54,7 @@ std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true
 	if (!getBool("noTrailingZeros")) return roundedPercent;
 	if (roundedPercent.find('.') == std::string::npos) return roundedPercent; // if percentage (after accuracy is applied) does not have a decimal point, abort!
 	std::smatch match;
-	bool matches = std::regex_match(roundedPercent, match, trailingZeroesRegex);
-	if (!matches) return roundedPercent;
+	if (!std::regex_match(roundedPercent, match, trailingZeroesRegex)) return roundedPercent;
 	if (match.empty() || match.size() > 3 || match[1].str().empty() || match[2].str().empty()) return roundedPercent;
 	roundedPercent = match[1].str();
 	if (roundedPercent.ends_with('.')) roundedPercent.pop_back(); // if, after removing trailing zeroes, string ends with decimal point separtor, remove decimal point separator
@@ -84,6 +86,14 @@ void savePercent(GJGameLevel* level, float percent, bool practice) {
 	Mod::get()->setSavedValue<float>(str, percent);
 }
 
+class $modify(MenuLayer) {
+	bool init() {
+		if (dst) return MenuLayer::init();
+		dst = Loader::get()->getLoadedMod(DEATHSCREENTWEAKS);
+		return MenuLayer::init();
+	}
+};
+
 class $modify(GJGameLevel) {
 	static void onModify(auto& self) {
 		(void) self.setHookPriority("GJGameLevel::savePercentage", PREFERRED_HOOK_PRIO);
@@ -93,12 +103,8 @@ class $modify(GJGameLevel) {
 		if (this->isPlatformer()) return;
 		const auto pl = PlayLayer::get();
 		if (getBool("logging")) log::info("=== level ID vs daily/weekly/event ID debug info ===\ndaily/weekly ID: {}\nlevel ID: {}\nis gauntlet:", m_dailyID.value(), m_levelID.value(), m_gauntletLevel);
-		if (!pl) {
-			return savePercent(this, percent, isPracticeMode);
-		}
-		if (pl->getCurrentPercent() > getPercentageForLevel(this, isPracticeMode)) {
-			return savePercent(this, PlayLayer::get()->getCurrentPercent(), isPracticeMode);
-		}
+		if (!pl) return savePercent(this, percent, isPracticeMode);
+		if (pl->getCurrentPercent() > getPercentageForLevel(this, isPracticeMode)) return savePercent(this, PlayLayer::get()->getCurrentPercent(), isPracticeMode);
 	}
 };
 
@@ -109,8 +115,8 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 	bool init(GJGameLevel* level, bool challenge) {
 		if (!LevelInfoLayer::init(level, challenge)) return false;
 		if (!getBool("enabled") || level->isPlatformer()) return true;
-		if (auto normal = getLabelByID(this, "normal-mode-percentage")) {
-			std::string dpAsString = decimalPercentAsString(level, false, true);
+		if (CCLabelBMFont* normal = getLabelByID(this, "normal-mode-percentage")) {
+			const std::string& dpAsString = decimalPercentAsString(level, false, true);
 			std::string dpNoPercent = dpAsString;
 			dpNoPercent.pop_back();
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
@@ -118,8 +124,8 @@ class $modify(MyLevelInfoLayer, LevelInfoLayer) {
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return true;
 			normal->setString(dpAsString.c_str());
 		}
-		if (auto practice = getLabelByID(this, "practice-mode-percentage")) {
-			std::string dpAsString = decimalPercentAsString(level, true, true);
+		if (CCLabelBMFont* practice = getLabelByID(this, "practice-mode-percentage")) {
+			const std::string& dpAsString = decimalPercentAsString(level, true, true);
 			std::string dpNoPercent = dpAsString;
 			dpNoPercent.pop_back();
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
@@ -140,7 +146,7 @@ class $modify(MyPauseLayer, PauseLayer) {
 		if (!getBool("enabled")) return;
 		auto level = PlayLayer::get()->m_level;
 		if (!level || level->isPlatformer()) return;
-		if (auto normal = getLabelByID(this, "normal-progress-label")) {
+		if (CCLabelBMFont* normal = getLabelByID(this, "normal-progress-label")) {
 			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			std::string dpAsString = decimalPercentAsString(level, false, true);
 			std::string dpNoPercent = dpAsString;
@@ -150,7 +156,7 @@ class $modify(MyPauseLayer, PauseLayer) {
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
 			normal->setString(dpAsString.c_str());
 		}
-		if (auto practice = getLabelByID(this, "practice-progress-label")) {
+		if (CCLabelBMFont* practice = getLabelByID(this, "practice-progress-label")) {
 			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
 			std::string dpAsString = decimalPercentAsString(level, true, true);
 			std::string dpNoPercent = dpAsString;
@@ -171,16 +177,16 @@ class $modify(MyLevelCell, LevelCell) {
 		LevelCell::loadFromLevel(level);
 		if (!getBool("enabled") || getBool("ignoreLevelCell")) return;
 		if (!level || level->isPlatformer()) return;
-		if (auto percent = getLabelByID(this, "percentage-label")) {
-			std::string dpAsString = decimalPercentAsString(level, false, false);
-			if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && utils::string::contains(dpAsString, "000%") && getBool("noTrailingZeros"))) return;
-			std::string dpNoPercent = dpAsString;
-			dpNoPercent.pop_back();
-			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
-			if (dpAsFloat.isErr()) return;
-			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
-			percent->setString(dpAsString.c_str());
-		}
+		CCLabelBMFont* percent = getLabelByID(this, "percentage-label");
+		if (!percent) return;
+		const std::string& dpAsString = decimalPercentAsString(level, false, false);
+		if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && utils::string::contains(dpAsString, "000%") && getBool("noTrailingZeros"))) return;
+		std::string dpNoPercent = dpAsString;
+		dpNoPercent.pop_back();
+		const auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+		if (dpAsFloat.isErr()) return;
+		if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
+		percent->setString(dpAsString.c_str());
 	}
 };
 
@@ -192,9 +198,9 @@ class $modify(MyLevelPage, LevelPage) {
 		LevelPage::updateDynamicPage(level);
 		if (!getBool("enabled")) return;
 		if (!level || level->isPlatformer()) return;
-		if (auto normal = getLabelByID(this, "normal-progress-label")) {
-			if (std::string(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			std::string dpAsString = decimalPercentAsString(level, false, true);
+		if (CCLabelBMFont* normal = getLabelByID(this, "normal-progress-label")) {
+			if (static_cast<std::string>(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
+			const std::string& dpAsString = decimalPercentAsString(level, false, true);
 			std::string dpNoPercent = dpAsString;
 			dpNoPercent.pop_back();
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
@@ -202,9 +208,9 @@ class $modify(MyLevelPage, LevelPage) {
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_normalPercent.value()) return;
 			normal->setString(dpAsString.c_str());
 		}
-		if (auto practice = getLabelByID(this, "practice-progress-label")) {
-			if (std::string(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
-			std::string dpAsString = decimalPercentAsString(level, true, true);
+		if (CCLabelBMFont* practice = getLabelByID(this, "practice-progress-label")) {
+			if (static_cast<std::string>(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent")) return;
+			const std::string& dpAsString = decimalPercentAsString(level, true, true);
 			std::string dpNoPercent = dpAsString;
 			dpNoPercent.pop_back();
 			auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
@@ -226,21 +232,20 @@ class $modify(MyPlayLayer, PlayLayer) {
 	void showNewBest(bool p0, int p1, int p2, bool p3, bool p4, bool p5) {
 		PlayLayer::showNewBest(p0, p1, p2, p3, p4, p5);
 		if (!getBool("enabled") || !m_level || m_level->isPlatformer()) return;
-		const auto loader = Loader::get();
-		if (Loader::get()->isModLoaded(DEATHSCREENTWEAKS)) {
-			const auto dst = loader->getLoadedMod(DEATHSCREENTWEAKS);
+		if (dst) {
 			if (dst->getSettingValue<bool>("enabled") && dst->getSettingValue<bool>("accuratePercent")) return;
 		}
-		loader->queueInMainThread([this]{
-			for (auto child : CCArrayExt<CCNode*>(this->getChildren())) {
+		Loader::get()->queueInMainThread([this]{
+			for (CCNode* child : CCArrayExt<CCNode*>(this->getChildren())) {
 				if (child->getZOrder() != 100) continue;
-				for (auto grandchild : CCArrayExt<CCNode*>(child->getChildren())) {
-					auto label = typeinfo_cast<CCLabelBMFont*>(grandchild);
+				for (CCNode* grandchild : CCArrayExt<CCNode*>(child->getChildren())) {
+					const auto label = typeinfo_cast<CCLabelBMFont*>(grandchild);
 					if (!label) continue;
-					if (!std::string(label->getString()).ends_with('%')) continue;
-					if (getBool("logging")) log::info("\nLoader::get()->isModLoaded(DEATHSCREENTWEAKS): {}\nlabel->getString(): {}\nlabel->getString().ends_with('%'): {}", Loader::get()->isModLoaded(DEATHSCREENTWEAKS), label->getString(), std::string(label->getString()).ends_with('%'));
-					if (!Loader::get()->isModLoaded(DEATHSCREENTWEAKS)) return label->setString(formatCurrentPercentInPlayLayer().c_str());
-					if (!Loader::get()->getLoadedMod(DEATHSCREENTWEAKS)->getSettingValue<bool>("enabled")) return label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
+					const auto& labelString = static_cast<std::string>(label->getString());
+					if (!labelString.ends_with('%')) continue;
+					if (getBool("logging")) log::info("\ndst: {}\nlabel->getString(): {}\nlabel->getString().ends_with('%'): {}", dst, labelString, labelString.ends_with('%'));
+					if (!dst) return label->setString(formatCurrentPercentInPlayLayer().c_str());
+					if (!dst->getSettingValue<bool>("enabled")) return label->setString(fmt::format("{}%", roundPercentage(getPercentageForLevel(m_level, false))).c_str());
 					return label->setString(formatCurrentPercentInPlayLayer().c_str());
 				}
 			}
@@ -249,7 +254,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 	void updateProgressbar() {
 		PlayLayer::updateProgressbar();
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
-		std::string percentLabelText = m_percentageLabel->getString();
+		const std::string& percentLabelText = m_percentageLabel->getString();
 		std::smatch match;
 		bool matches = std::regex_match(percentLabelText, match, percentageRegex);
 		if (!matches) return;
