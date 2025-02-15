@@ -266,6 +266,8 @@ class $modify(MyPlayLayer, PlayLayer) {
 	void updateProgressbar() {
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return PlayLayer::updateProgressbar();
 		const std::string& percentLabelText = m_percentageLabel->getString();
+		const std::string& toAppend = decimalPercentAsString(m_level, m_isPracticeMode);
+		if (utils::string::endsWith(percentLabelText, toAppend)) return;
 		PlayLayer::updateProgressbar();
 		std::smatch match;
 		const bool contains = std::regex_match(percentLabelText, match, percentageRegex);
@@ -274,8 +276,6 @@ class $modify(MyPlayLayer, PlayLayer) {
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
-		const std::string& toAppend = fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode));
-		if (utils::string::endsWith(percentLabelText, toAppend)) return;
 		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}", newBestSeparator, possiblyNewBest);
 		std::string newBestWithoutPercent = possiblyNewBest;
 		newBestWithoutPercent.pop_back();
@@ -283,7 +283,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (numFromString.isErr()) return;
 		if (numFromString.unwrap() != m_level->m_normalPercent && !m_isPracticeMode) return;
 		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
-		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), toAppend);
+		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, toAppend));
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
 };
