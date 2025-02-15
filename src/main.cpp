@@ -11,7 +11,7 @@
 #define PREFERRED_HOOK_PRIO (-3999) // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
 #define DEATHSCREENTWEAKS "raydeeux.deathscreentweaks"
 
-static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
+static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/j5IVLk/2 for context.
@@ -266,13 +266,9 @@ class $modify(MyPlayLayer, PlayLayer) {
 	void updateProgressbar() {
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return PlayLayer::updateProgressbar();
 		const std::string& percentLabelText = m_percentageLabel->getString();
-		const std::string& toAppend = decimalPercentAsString(m_level, m_isPracticeMode);
-		if (utils::string::endsWith(percentLabelText, toAppend)) return;
 		PlayLayer::updateProgressbar();
 		std::smatch match;
-		const bool contains = std::regex_match(percentLabelText, match, percentageRegex);
-		log::info("percentLabelText: {}", percentLabelText);
-		if (!contains) return log::info ("match.size(): {}, match.empty(), {}, match[1]: {}, match[2]: {}", match.size() + 0, match.empty(), match[1].str(), match[2].str());
+		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
@@ -283,7 +279,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (numFromString.isErr()) return;
 		if (numFromString.unwrap() != m_level->m_normalPercent && !m_isPracticeMode) return;
 		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
-		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, toAppend));
+		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode)));
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
 };
