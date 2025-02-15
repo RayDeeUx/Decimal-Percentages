@@ -267,11 +267,12 @@ class $modify(MyPlayLayer, PlayLayer) {
 		PlayLayer::updateProgressbar();
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
 		const std::string& percentLabelText = m_percentageLabel->getString();
+		log::info("percentLabelText: {}", percentLabelText);
 		std::smatch match;
-		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}\npercentLabelText: {}", newBestSeparator, possiblyNewBest, percentLabelText);
 		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
+		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}\npercentLabelText: {}", newBestSeparator, possiblyNewBest, percentLabelText);
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
 		std::string newBestWithoutPercent = possiblyNewBest;
 		newBestWithoutPercent.pop_back();
