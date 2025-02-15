@@ -268,7 +268,8 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
 		const std::string& percentLabelText = m_percentageLabel->getString();
 		std::smatch match;
-		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
+		const bool contains = std::regex_match(percentLabelText, match, percentageRegex);
+		if (!contains) return log::info ("match.size(): {}, match.empty(), {}, match[1]: {}, match[2]: {}", match.size() + 0, match.empty(), match[1].str(), match[2].str());
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
