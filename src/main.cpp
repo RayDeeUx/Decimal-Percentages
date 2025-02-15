@@ -264,9 +264,9 @@ class $modify(MyPlayLayer, PlayLayer) {
 		});
 	}
 	void updateProgressbar() {
-		PlayLayer::updateProgressbar();
-		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
+		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return PlayLayer::updateProgressbar();
 		const std::string& percentLabelText = m_percentageLabel->getString();
+		PlayLayer::updateProgressbar();
 		std::smatch match;
 		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
 		std::string newBestSeparator = match[1].str();
