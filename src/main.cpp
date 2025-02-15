@@ -266,7 +266,9 @@ class $modify(MyPlayLayer, PlayLayer) {
 	void updateProgressbar() {
 		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return PlayLayer::updateProgressbar();
 		const std::string& percentLabelText = m_percentageLabel->getString();
+		const std::string& toAppend = fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode));
 		PlayLayer::updateProgressbar();
+		if (utils::string::contains(percentLabelText, toAppend)) return;
 		std::smatch match;
 		const bool contains = std::regex_match(percentLabelText, match, percentageRegex);
 		log::info("percentLabelText: {}", percentLabelText);
@@ -281,7 +283,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (numFromString.isErr()) return;
 		if (numFromString.unwrap() != m_level->m_normalPercent && !m_isPracticeMode) return;
 		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
-		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode)));
+		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), toAppend);
 		m_percentageLabel->setString(newLabelText.c_str());
 	}
 };
