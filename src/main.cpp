@@ -11,7 +11,7 @@
 #define PREFERRED_HOOK_PRIO (-3999) // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
 #define DEATHSCREENTWEAKS "raydeeux.deathscreentweaks"
 
-static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+%)$)", std::regex::optimize | std::regex::icase);
+static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/j5IVLk/2 for context.
@@ -264,15 +264,15 @@ class $modify(MyPlayLayer, PlayLayer) {
 		});
 	}
 	void updateProgressbar() {
-		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return PlayLayer::updateProgressbar();
-		const std::string& percentLabelText = m_percentageLabel->getString();
 		PlayLayer::updateProgressbar();
+		if (!getBool("enabled") || getBool("ignorePercentageLabel") || !m_level || m_level->isPlatformer() || !m_percentageLabel) return;
+		const std::string& percentLabelText = m_percentageLabel->getString();
 		std::smatch match;
 		if (!std::regex_match(percentLabelText, match, percentageRegex)) return;
 		std::string newBestSeparator = match[1].str();
 		std::string possiblyNewBest = match[2].str();
+		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}\npercentLabelText: {}", newBestSeparator, possiblyNewBest, percentLabelText);
 		if (match.empty() || match.size() > 3 || newBestSeparator.empty() || possiblyNewBest.empty() || !possiblyNewBest.ends_with("%")) return;
-		if (getBool("logging")) log::info("=== PERCENTAGE LABEL DEBUG INFO ===\nmatch[1].str() [newBestSeparator]: {}\nmatch[2].str() [possiblyNewBest]: {}", newBestSeparator, possiblyNewBest);
 		std::string newBestWithoutPercent = possiblyNewBest;
 		newBestWithoutPercent.pop_back();
 		auto numFromString = utils::numFromString<int64_t>(newBestWithoutPercent);
