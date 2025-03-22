@@ -1,14 +1,14 @@
 # DecimalPercentages
 
-### <c-ffff55>As seen on</c> <c-ff0000>You</c>Tube<c-ffff55>!</c> ([Hqmy](https://youtube.com/watch?v=AO--mVVFtKI&t=23), Every End 79.62%)
+### <cy>As seen on</c> <c-ff0000>You</c>Tube<c-ffff55>!</c> ([Hqmy](https://youtube.com/watch?v=AO--mVVFtKI&t=23), Every End 79.62%)
 
-Adds decimal points to percentages everywhere you can think of (Hopefully.):
-- Main levels selection menu <cy>(Note: has yet to be tested with Main Levels Editor by user666)</c>
+Adds decimal points to percentages everywhere you can think of <cy>(also read the notes below this list!)</c>:
+- Main levels selection menu
 - Level lists and level browsing menus
 - Pause menu (including Editor levels)
 - "New Best" screens
 - Best scores shown in percentage (%) label <cy>(Requires a mod menu with a "Best in Percentage" feature enabled for full effect)</c>
-- Editor Levels <cy>(MarioMastr's [Progress in Editor Levels](mod:mariomastr.progress_of_editor_levels) required)</c>
+- Editor levels <cy>(MarioMastr's [Progress in Editor Levels](mod:mariomastr.progress_of_editor_levels) required)</c>
 
 <cr>_***Note:***_</c> *<cr>As there are roughly five competing mod menus on the Geode index as of publishing this mod (and a vanilla in-game toggle), this mod will not add decimal points to the text displaying your current percentage while playing a level.</c>*
 
