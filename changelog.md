@@ -1,4 +1,7 @@
 # DecimalPercentages Changelog
+## 1.2.0
+- Added support for percentages added by MarioMastr's "Progress of Editor Levels" mod.
+- Hello, Hqmy!
 ## 1.1.3
 - *Hopefully* fix a bug where the decimal percentages for some level cells displayed some variation of `0.000%`.
 - Refactor a few things here and there.

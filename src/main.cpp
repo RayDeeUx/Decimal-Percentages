@@ -28,15 +28,15 @@ bool getBool(const std::string_view& key) {
 	return Mod::get()->getSettingValue<bool>(key);
 }
 
-int64_t getDecimalPlaces(bool qualifiedForInsaneMode = true) {
+int64_t getDecimalPlaces(const bool qualifiedForInsaneMode = true) {
 	auto decimalPlaces = Mod::get()->getSettingValue<int64_t>("decimalPlaces");
 	if (!qualifiedForInsaneMode && decimalPlaces > 3 && !getBool("insaneMode")) decimalPlaces = 3;
 	return decimalPlaces;
 }
 
-float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
+float getPercentageForLevel(GJGameLevel* level, const bool practice = false) {
 	if (level->m_normalPercent > 99 && !practice || level->m_practicePercent > 99 && practice) return 100.f;
-	std::string str = "";
+	std::string str;
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
 	} else if (level->m_gauntletLevel) {
@@ -47,12 +47,12 @@ float getPercentageForLevel(GJGameLevel* level, bool practice = false) {
 		str = fmt::format("percentage_{}_{}_periodic_{}", practice ? "practice" : "normal", level->m_levelID.value(), level->m_dailyID.value());
 	}
 	if (!Mod::get()->hasSavedValue(str)) {
-		Mod::get()->setSavedValue<float>(str, practice ? level->m_practicePercent : level->m_normalPercent.value());
+		Mod::get()->setSavedValue<float>(str, practice ? static_cast<float>(level->m_practicePercent) : static_cast<float>(level->m_normalPercent.value()));
 	}
-	return Mod::get()->getSavedValue<float>(str, practice ? level->m_practicePercent : level->m_normalPercent.value());
+	return Mod::get()->getSavedValue<float>(str, practice ? static_cast<float>(level->m_practicePercent) : static_cast<float>(level->m_normalPercent.value()));
 }
 
-std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true) {
+std::string roundPercentage(const float percentage, const bool qualifiedForInsaneMode = true) {
 	if (percentage >= 100.f && getBool("ignoreHundredPercent")) return "100";
 	auto roundedPercent = numToString<float>(percentage, getDecimalPlaces(qualifiedForInsaneMode));
 	if (!getBool("noTrailingZeros")) return roundedPercent;
@@ -65,7 +65,7 @@ std::string roundPercentage(float percentage, bool qualifiedForInsaneMode = true
 	return roundedPercent;
 }
 
-std::string decimalPercentAsString(GJGameLevel *level, bool practice = false, bool qualifiedForInsaneMode = true) {
+std::string decimalPercentAsString(GJGameLevel *level, const bool practice = false, const bool qualifiedForInsaneMode = true) {
 	return fmt::format("{}%", roundPercentage(getPercentageForLevel(level, practice), qualifiedForInsaneMode));
 }
 
@@ -75,9 +75,9 @@ CCLabelBMFont* getLabelByID(CCNode* parent, const std::string& nodeID) {
 	return node;
 }
 
-void savePercent(GJGameLevel* level, float percent, bool practice) {
+void savePercent(GJGameLevel* level, const float percent, const bool practice) {
 	if (level->isPlatformer()) return;
-	std::string str = "";
+	std::string str;
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
 	} else if (level->m_gauntletLevel) {
@@ -101,7 +101,7 @@ class $modify(MyMenuLayer, MenuLayer) {
 	}
 };
 
-class $modify(GJGameLevel) {
+class $modify(MyGJGameLevel, GJGameLevel) {
 	static void onModify(auto& self) {
 		(void) self.setHookPriority("GJGameLevel::savePercentage", PREFERRED_HOOK_PRIO);
 	}
@@ -110,7 +110,7 @@ class $modify(GJGameLevel) {
 		if (this->isPlatformer()) return;
 		const auto pl = PlayLayer::get();
 		if (getBool("logging")) log::info("=== level ID vs daily/weekly/event ID debug info ===\ndaily/weekly ID: {}\nlevel ID: {}\nis gauntlet:", m_dailyID.value(), m_levelID.value(), m_gauntletLevel);
-		if (!pl) return savePercent(this, percent, isPracticeMode);
+		if (!pl) return savePercent(this, static_cast<float>(percent), isPracticeMode);
 		if (pl->getCurrentPercent() > getPercentageForLevel(this, isPracticeMode)) return savePercent(this, PlayLayer::get()->getCurrentPercent(), isPracticeMode);
 	}
 };
