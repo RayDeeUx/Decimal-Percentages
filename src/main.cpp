@@ -6,9 +6,11 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/LevelPage.hpp>
+#include <Geode/modify/MenuLayer.hpp>
 #include <regex>
 
 #define PREFERRED_HOOK_PRIO (-3999) // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
+#define MARIOMASTR "mariomastr.progress_of_editor_levels"
 #define DEATHSCREENTWEAKS "raydeeux.deathscreentweaks"
 
 static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d+(?:\.\d+)?%)$)", std::regex::optimize | std::regex::icase);
@@ -19,6 +21,8 @@ static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::opti
 using namespace geode::prelude;
 
 geode::Mod* dst = nullptr; // deathscreentweaks
+bool calledAlready = false;
+bool marioMastrMod = false;
 
 bool getBool(const std::string_view& key) {
 	return Mod::get()->getSettingValue<bool>(key);
@@ -281,5 +285,43 @@ class $modify(MyPlayLayer, PlayLayer) {
 		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
 		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode)));
 		m_percentageLabel->setString(newLabelText.c_str());
+	}
+};
+
+class $modify(MyEditLevelLayer, EditLevelLayer) {
+	static void onModify(auto& self) {
+		if (marioMastrMod) (void) self.setHookPriorityAfterPost("EditLevelLayer::init", MARIOMASTR);
+		else (void) self.setHookPriority("EditLevelLayer::init", PREFERRED_HOOK_PRIO);
+	}
+	bool init(GJGameLevel* level) {
+		if (!EditLevelLayer::init(level)) return false;
+		if (!marioMastrMod || getBool("ignoreEditLevelLayer")) return true;
+		if (CCLabelBMFont* normal = getLabelByID(this, "normal-mode-percentage"); normal && !(static_cast<std::string>(normal->getString()).starts_with("100") && getBool("ignoreHundredPercent"))) {
+			const std::string& dpAsString = decimalPercentAsString(level, false, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			const auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isOk() && static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) == level->m_normalPercent.value()) normal->setString(dpAsString.c_str());
+		}
+		if (CCLabelBMFont* practice = getLabelByID(this, "practice-mode-percentage"); practice && !(static_cast<std::string>(practice->getString()).starts_with("100") && getBool("ignoreHundredPercent"))) {
+			const std::string& dpAsString = decimalPercentAsString(level, true, true);
+			std::string dpNoPercent = dpAsString;
+			dpNoPercent.pop_back();
+			const auto dpAsFloat = utils::numFromString<float>(dpNoPercent);
+			if (dpAsFloat.isErr()) return true;
+			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_practicePercent) return true;
+			practice->setString(dpAsString.c_str());
+		}
+		return true;
+	}
+};
+
+class $modify(MyMenuLayer, MenuLayer) {
+	bool init() {
+		if (!MenuLayer::init()) return false;
+		if (calledAlready) return true;
+		calledAlready = true;
+		if (Loader::get()->isModLoaded(MARIOMASTR)) marioMastrMod = true;
+		return true;
 	}
 };
