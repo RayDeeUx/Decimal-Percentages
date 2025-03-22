@@ -1,4 +1,5 @@
 #include <cvolton.level-id-api/include/EditorIDs.hpp>
+#include <Geode/modify/EditLevelLayer.hpp>
 #include <Geode/modify/LevelInfoLayer.hpp>
 #include <Geode/modify/GJGameLevel.hpp>
 #include <Geode/modify/PauseLayer.hpp>
