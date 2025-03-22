@@ -7,7 +7,6 @@
 #include <Geode/modify/PlayLayer.hpp>
 #include <Geode/modify/LevelCell.hpp>
 #include <Geode/modify/LevelPage.hpp>
-#include <Geode/modify/MenuLayer.hpp>
 #include <regex>
 
 #define PREFERRED_HOOK_PRIO (-3999) // because for some incredible reason QOLMod changes a level's levelType value for a split second and now this hook prio's here to work around that
@@ -91,11 +90,14 @@ void savePercent(GJGameLevel* level, float percent, bool practice) {
 	Mod::get()->setSavedValue<float>(str, percent);
 }
 
-class $modify(MenuLayer) {
+class $modify(MyMenuLayer, MenuLayer) {
 	bool init() {
-		if (dst) return MenuLayer::init();
+		if (!MenuLayer::init()) return false;
+		if (calledAlready) return true;
+		calledAlready = true;
+		if (Loader::get()->isModLoaded(MARIOMASTR)) marioMastrMod = true;
 		dst = Loader::get()->getLoadedMod(DEATHSCREENTWEAKS);
-		return MenuLayer::init();
+		return true;
 	}
 };
 
@@ -313,16 +315,6 @@ class $modify(MyEditLevelLayer, EditLevelLayer) {
 			if (static_cast<int64_t>(dpAsFloat.unwrapOr(0.f)) != level->m_practicePercent) return true;
 			practice->setString(dpAsString.c_str());
 		}
-		return true;
-	}
-};
-
-class $modify(MyMenuLayer, MenuLayer) {
-	bool init() {
-		if (!MenuLayer::init()) return false;
-		if (calledAlready) return true;
-		calledAlready = true;
-		if (Loader::get()->isModLoaded(MARIOMASTR)) marioMastrMod = true;
 		return true;
 	}
 };
