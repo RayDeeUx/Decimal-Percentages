@@ -1,14 +1,14 @@
 {
-	"geode": "4.3.1",
+	"geode": "5.0.0-beta.2",
 	"gd": {
 		"win": "2.2074",
 		"mac": "2.2074",
-		"android": "2.2074",
-		"ios": "2.2074"
+		"ios": "2.2074",
+		"android": "2.2074"
 	},
 	"id": "raydeeux_thesillydoggo.decimalpercentages",
 	"name": "DecimalPercentages",
-	"version": "v1.2.1",
+	"version": "v1.2.2",
 	"developers": [
 		"TheSillyDoggo",
 		"RayDeeUx"
@@ -82,35 +82,15 @@
 			"default": false
 		}
 	},
-	"dependencies": [
-		{
-			"id": "cvolton.level-id-api",
-			"version": ">=v1.0.1",
-			"importance": "required"
-		},
-		{
-			"id": "geode.node-ids",
-			"version": ">=v1.16.0",
-			"importance": "required"
-		}
-	],
-	"incompatibilities": [
-		{
-			"id": "thesillydoggo.decimal_percentages",
-			"version": "*",
-			"importance": "superseded"
-		},
-		{
-			"id": "raydeeux_thesillydoggo.decimal_percentages",
-			"version": "*",
-			"importance": "superseded"
-		},
-		{
-			"id": "ata.percentages",
-			"version": "*",
-			"importance": "superseded"
-		}
-	],
+	"dependencies": {
+		"cvolton.level-id-api": ">=v1.0.1",
+		"geode.node-ids": ">=v1.22.0"
+	},
+	"incompatibilities": {
+		"thesillydoggo.decimal_percentages": ">=1.0.0",
+		"raydeeux_thesillydoggo.decimal_percentages": ">=1.0.0",
+		"ata.percentages": ">=1.0.0"
+	},
 	"issues": {
 		"url": "https://discord.com/channels/911701438269386882/1205523212444639292",
 		"info": "Ping me <cl>(@erymanthus)</c> in the Geode SDK Discord server's <cl>#help</c> channel if you need help. <cr>DMs are NOT accepted.</c>"

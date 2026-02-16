@@ -45,8 +45,6 @@ jobs:
           # bindings-ref: "foobar"
           combine: true
           target: ${{ matrix.config.target }}
-          cli: nightly # remove once iOS finishes
-          sdk: nightly # remove once iOS finishes
 
   package:
     name: Package builds

@@ -17,6 +17,7 @@ static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d
 // see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/j5IVLk/2 for context.
+static const std::regex allZeroesRegex(R"^0\.0+%$", std::regex::optimize | std::regex::icase);
 
 using namespace geode::prelude;
 
@@ -35,7 +36,7 @@ int64_t getDecimalPlaces(const bool qualifiedForInsaneMode = true) {
 }
 
 float getPercentageForLevel(GJGameLevel* level, const bool practice = false) {
-	if (level->m_normalPercent > 99 && !practice || level->m_practicePercent > 99 && practice) return 100.f;
+	if (level->m_normalPercent.value() > 99 && !practice || level->m_practicePercent > 99 && practice) return 100.f;
 	std::string str;
 	if (level->m_levelType == GJLevelType::Editor) {
 		str = fmt::format("percentage_{}_local_{}", practice ? "practice" : "normal", EditorIDs::getID(level));
@@ -186,6 +187,7 @@ class $modify(MyLevelCell, LevelCell) {
 		if (!percent) return;
 		const std::string& dpAsString = decimalPercentAsString(level, false, false);
 		std::smatch match;
+		std::smatch anotherMatch;
 		if (dpAsString == "0%" || (utils::string::startsWith(dpAsString, "0.") && std::regex_match(dpAsString, match, trailingZeroesRegex) && getBool("noTrailingZeros"))) return;
 		std::string dpNoPercent = dpAsString;
 		dpNoPercent.pop_back();
@@ -200,6 +202,7 @@ class $modify(MyLevelCell, LevelCell) {
 			if (splitVector.empty()) return;
 			if (splitVector.at(0) != percentString) return;
 		}
+		if (std::regex_match(dpAsString, anotherMatch, allZeroesRegex)) return;
 		percent->setString(dpAsString.c_str());
 	}
 	void loadFromLevel(GJGameLevel* level) {
@@ -284,7 +287,7 @@ class $modify(MyPlayLayer, PlayLayer) {
 		newBestWithoutPercent.pop_back();
 		auto numFromString = utils::numFromString<int64_t>(newBestWithoutPercent);
 		if (numFromString.isErr()) return;
-		if (numFromString.unwrap() != m_level->m_normalPercent && !m_isPracticeMode) return;
+		if (numFromString.unwrap() != m_level->m_normalPercent.value() && !m_isPracticeMode) return;
 		if (numFromString.unwrap() != m_level->m_practicePercent && m_isPracticeMode && !m_isTestMode) return;
 		std::string newLabelText = std::regex_replace(percentLabelText, std::regex(fmt::format("{}{}", newBestSeparator, possiblyNewBest)), fmt::format("{}{}", newBestSeparator, decimalPercentAsString(m_level, m_isPracticeMode)));
 		m_percentageLabel->setString(newLabelText.c_str());
