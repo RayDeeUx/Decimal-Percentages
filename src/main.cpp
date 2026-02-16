@@ -17,7 +17,7 @@ static const std::regex percentageRegex(R"(^(?:(?:\d+(?:\.\d+)?%)([^\n\d]*))+(\d
 // see https://regex101.com/r/jlTQrI/2 for context, and https://regex101.com/r/poPUOK/1 for the better version
 static const std::regex trailingZeroesRegex(R"((.*[^0])(0+)$)", std::regex::optimize | std::regex::icase);
 // see https://regex101.com/r/j5IVLk/2 for context.
-static const std::regex allZeroesRegex(R"^0\.0+%$", std::regex::optimize | std::regex::icase);
+static const std::regex allZeroesRegex(R"(^0\.0+%$)", std::regex::optimize | std::regex::icase);
 
 using namespace geode::prelude;
 
