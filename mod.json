@@ -83,7 +83,7 @@
 		}
 	},
 	"dependencies": {
-		"cvolton.level-id-api": ">=v1.0.1",
+		"cvolton.level-id-api": ">=v2.0.1",
 		"geode.node-ids": ">=v1.22.0"
 	},
 	"incompatibilities": {
