@@ -1,5 +1,5 @@
 # DecimalPercentages Changelog
-## v1.2.2
+## v1.2.2 and v1.2.3
 - Port to GD 2.2081.
 ## v1.2.1
 - Experimental iOS support.
